@@ -18,21 +18,23 @@ int main(int argc, char* argv[]) {
     // argv: an array of strings (char *'s), where each string represents an individual argument
 
     if (argc != 2) {
-        printf("Please provide the IP address of the server as an argument\n");
-        printf("This program should receive only one argument\n");
+        printf("[Client] Please provide the IP address of the server as an argument\n");
+        printf("[Client] This program should receive only one argument\n");
         return 1;
     } else {
-        printf("Client: IP provided: %s\n", argv[1]);
+        printf("[Client] IP provided by user: %s\n", argv[1]);
     }
 
     // Initialize our messages to the server
     char message_to_server[256] = "Client of Emilio O.G.";
     int num_from_user;
-    printf("Please provide a number between 1 and 100: ");
+    printf("[Client] Please provide a number between 1 and 100: ");
     scanf("%d", &num_from_user);
 
     if (num_from_user < 1 || num_from_user > 100) {
-        
+        printf("[Client] Number needs to 1 <= x <= 100\n");
+        printf("[Client] Exiting gracefully\n");
+        return 0;
     }
 
 
@@ -60,43 +62,46 @@ int main(int argc, char* argv[]) {
     int connection_status = connect(network_socket, (struct sockaddr*) &server_address, sizeof(server_address));
     // check for error with the connection
     if (connection_status == -1 ) {
-        printf("There was an issue connecting to the remote socket\n");
+        printf("[Client] There was an issue connecting to the remote socket\n");
+        printf("[Client] closing client socket\n");
         close(network_socket);
+        printf("[Client] client socket closed\n");
+        printf("[Client] Exiting gracefully\n");
         return 0;
     }
 
 
     // send string to server
     send(network_socket, message_to_server, sizeof(message_to_server), 0);
-    printf("Client: sent char[256] message\n");
+    printf("[Client] sent char[256] message to server: \"%s\"\n", message_to_server);
     
     // send num to server
     num_from_user = htonl(num_from_user);
     send(network_socket, &num_from_user, sizeof(num_from_user), 0);
-    printf("Client: sent integer message\n");
+    printf("[Client] sent integer message to server: %d\n", ntohl(num_from_user));
 
 
     // receive data from the server
     char message_from_server[256];
     recv(network_socket, &message_from_server, sizeof(message_from_server), 0);
     message_from_server[255] = '\0';
-    printf("Client: received char[256] from server\n");
+    printf("[Client] received char[256] from server: \"%s\"\n", message_from_server);
 
     int num_from_server;
     recv(network_socket, &num_from_server, sizeof(num_from_server), 0);
     num_from_server = ntohl(num_from_server);
-    printf("Client: received integer from server\n");
+    printf("[Client] received integer from server: %d\n", num_from_server);
 
 
     // print out the server's response
-    printf("Client: message from Server: %s\n", message_from_server);
-    printf("Client: integer from Client: %d\n", num_from_server);
-    printf("Client: sum of integers: %d\n", (ntohl(num_from_user) + num_from_server));
+    printf("[Client] sum of integers: %d\n", (ntohl(num_from_user) + num_from_server));
+
 
     // close socket after done receiving
-    printf("Client: closing sockets\n");
+    printf("[Client] closing client socket\n");
     close(network_socket);
-    printf("Client: sockets closed\n");
+    printf("[Client] client socket closed\n");
+    printf("[Client] Exiting gracefully\n");
 
     return 0;
 }
